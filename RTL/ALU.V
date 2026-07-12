@@ -1,7 +1,7 @@
 module ALU (
     input  wire [31:0] A,          // First ALU operand
     input  wire [31:0] B,          // Second ALU operand
-    input  wire [3:0]  ALUControl, // Selects ALU operation
+    input  wire [3:0]  alu_ctrl, // Selects ALU operation
 
     output reg  [31:0] Result,     // ALU result
     output wire        Zero,       // 1 when Result == 0, useful for beq
@@ -27,7 +27,7 @@ module ALU (
         Overflow = 1'b0;
         temp     = 33'b0;
 
-        case (ALUControl)
+        case (alu_ctrl)
 
             // ADD: Result = A + B
             ALU_ADD: begin
