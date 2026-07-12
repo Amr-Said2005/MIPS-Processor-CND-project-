@@ -66,7 +66,7 @@ module control_unit (
                 MemtoReg = 1'b0;
                 Branch   = 1'b0;
                 Jump     = 1'b0;
-                Extd     = 1'b0;
+                Extd     = 1'bx;
             end
 
             ADDI: begin                 
@@ -109,26 +109,26 @@ module control_unit (
             end
 
             SW: begin                   
-                RegDst   = 1'b0;
+                RegDst   = 1'bx;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b1;
                 ALUop    = 2'b01;
                 MemRead  = 1'b0;
                 MemWrite = 1'b1;
-                MemtoReg = 1'b0;
+                MemtoReg = 1'bx;
                 Branch   = 1'b0;
                 Jump     = 1'b0;
                 Extd     = 1'b1;
             end
 
             BEQ: begin                  
-                RegDst   = 1'b0;
+                RegDst   = 1'bx;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b0;
                 ALUop    = 2'b10;       
                 MemRead  = 1'b0;
                 MemWrite = 1'b0;
-                MemtoReg = 1'b0;
+                MemtoReg = 1'bx;
                 Branch   = 1'b1;        
                 Jump     = 1'b0;
                 Extd     = 1'b1;
