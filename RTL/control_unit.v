@@ -3,7 +3,7 @@
 //  RISC-Style 20-bit Processor - CND Internship
 // ============================================================
 module control_unit (
-    input  wire [3:0] opcode,
+	input  wire [5:0] opcode,
     input  wire       zero,
     output reg        RegDst,    
     output reg        RegWrite,  
@@ -22,16 +22,16 @@ module control_unit (
 );
 
     
-    parameter R_type = 4'b0000;  
-    parameter ADDI   = 4'b0001;
-    parameter ANDI   = 4'b0010;
-    parameter LW     = 4'b0011;
-    parameter SW     = 4'b0100;
-    parameter BEQ    = 4'b0101;
-    parameter J      = 4'b0110;
-    parameter JMN_OP = 4'b0111;  
-    parameter SWI    = 4'b1000;
-    parameter PMC    = 4'b1001;
+    parameter R_type = 6'b000000;  
+    parameter ADDI   = 6'b000001;
+    parameter ANDI   = 6'b000010;
+    parameter LW     = 6'b000011;
+    parameter SW     = 6'b000100;
+    parameter BEQ    = 6'b000101;
+    parameter J      = 6'b000110;
+    parameter JMN_OP = 6'b000111;  
+    parameter SWI    = 6'b001000;
+    parameter PMC    = 6'b001001;
 
 	 
     assign PCSrc = (Branch & zero) | Jump | JMN | pmc;
