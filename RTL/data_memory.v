@@ -4,21 +4,25 @@ module data_memory (
     input wire        memWrite,
     input wire        clk,
     input wire [31:0] data_in,
+    input wire        rst_n,
     output reg [31:0] data_out
 );
-<<<<<<< HEAD
 
 reg [1023:0] mem [31:0];
+integer i;
 
-always @(clk) begin
-
-    if(memRead) begin
-        data_out <= mem[address];
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 0; i < 1023; i = i + 1)
+            mem[i] = 32'b0;
     end
+
+
+    else if(memRead) begin
+        data_out <= mem[address];
+    end 
     else if(memWrite) begin
         mem[address] <= data_in;
     end
 end
 endmodule 
-=======
->>>>>>> 55e7d9378930120be076dc8a93e649d1ee34028f
