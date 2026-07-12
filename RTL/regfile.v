@@ -10,7 +10,7 @@ reg [31:0] regfile [31:0];
 
 always@(posedge clk)begin
 if(RegWrite)
-regfile[writereg]<=
+regfile[writereg]<=writedata;
 end 
 assign regfile[readreg1]=readdata1;
 assign regfile[readreg2]=readdata2;
