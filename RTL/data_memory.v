@@ -6,6 +6,7 @@ module data_memory (
     input wire [31:0] data_in,
     output reg [31:0] data_out
 );
+<<<<<<< HEAD
 
 reg [1023:0] mem [31:0];
 
@@ -19,3 +20,5 @@ always @(clk) begin
     end
 end
 endmodule 
+=======
+>>>>>>> 55e7d9378930120be076dc8a93e649d1ee34028f
