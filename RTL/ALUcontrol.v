@@ -1,5 +1,5 @@
 module alu_control (
-    input      [1:0] alu_op,     // ALUOp from the main control unit
+    input      [1:0] ALUop,     // ALUOp from the main control unit
     input      [5:0] funct,      // instruction[5:0], used for R-type
     output reg [3:0] alu_ctrl    // ALU operation select
 );
@@ -27,7 +27,7 @@ module alu_control (
     // and for R-type (ALUOp = 10) the funct field picks the exact one.
     // ---------------------------------------------------------------
     always @(*) begin
-        case (alu_op)
+        case (ALUop)
             2'b00: alu_ctrl = ALU_ADD;          // lw / sw  -> address add
             2'b01: alu_ctrl = ALU_SUB;          // beq      -> subtract to compare
             2'b10: begin                        // R-type   -> decode funct
