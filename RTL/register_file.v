@@ -10,10 +10,18 @@ module register_file (
     output     [31:0] read_data_2     // rt data
 );
 
-    reg [31:0] registers [0:31];      // 32 registers, 32 bits each
-    integer i;
+    // -----------------------------------------------------------------
+    // Internal declarations
+    // -----------------------------------------------------------------
+    reg  [31:0] registers [0:31];     // storage: 32 registers, 32 bits each
+    integer     i;                    // loop index for the reset clear
 
+    // Note: read_data_1 / read_data_2 are the module outputs. They are
+    // implicit wires here, driven combinationally by the assigns below.
+
+    // -----------------------------------------------------------------
     // Asynchronous reads. Register 0 ($zero) always reads as 0.
+    // -----------------------------------------------------------------
     assign read_data_1 = (read_reg_1 == 5'd0) ? 32'd0 : registers[read_reg_1];
     assign read_data_2 = (read_reg_2 == 5'd0) ? 32'd0 : registers[read_reg_2];
 

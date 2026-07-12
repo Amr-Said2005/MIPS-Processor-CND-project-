@@ -6,7 +6,7 @@ module instruction_memory (
     reg [31:0] instr_memory [0:1023]; // 1024 words
 
     initial begin
-        $readmemb("instruction.mem", instr_memory);
+        $readmemb("instruction.mem.txt", instr_memory);
     end
 
     assign instruction = instr_memory[read_address];
