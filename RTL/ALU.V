@@ -1,7 +1,7 @@
 module ALU (
     input  wire [31:0] A,          // First ALU operand
     input  wire [31:0] B,          // Second ALU operand
-    input  wire [3:0]  alu_ctrl, // Selects ALU operation
+    input  wire [5:0]  alu_ctrl, // Selects ALU operation
 
     output reg  [31:0] Result,     // ALU result
     output wire        Zero,       // 1 when Result == 0, useful for beq
@@ -11,11 +11,11 @@ module ALU (
 );
 
     // ALU operation codes
-    localparam ALU_ADD = 4'b0000;
-    localparam ALU_SUB = 4'b0001;
-    localparam ALU_AND = 4'b0010;
-    localparam ALU_OR  = 4'b0011;
-    localparam ALU_SLT = 4'b0100;
+    localparam ALU_ADD = 6'b000000;
+    localparam ALU_SUB = 6'b000001;
+    localparam ALU_AND = 6'b000010;
+    localparam ALU_OR  = 6'b000011;
+    localparam ALU_SLT = 6'b000100;
 
     // Internal 33-bit value to capture carry
     reg [32:0] temp;
