@@ -3,6 +3,7 @@ module instruction_memory (
     output [31:0] instruction
 );
 
+
     reg [31:0] instr_memory [0:1023]; // 1024 words
 
     initial begin
