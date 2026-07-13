@@ -8,7 +8,7 @@ module data_memory (
     output reg [31:0] data_out
 );
 
-reg [1023:0] mem [31:0];
+reg [31:0] mem [1023:0];
 integer i;
 
 always @(posedge clk or negedge rst_n) begin
