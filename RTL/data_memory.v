@@ -8,7 +8,7 @@ module data_memory (
     input wire        rst_r,
     output reg [31:0] data_out
 );
-
+//test from yo mans shal
 reg [31:0] mem [1023:0];
 integer i;
 
