@@ -7,7 +7,7 @@
 // Parameters:  (none)
 // Ports:       bin - 4-bit hexadecimal input (0..F)
 //              seg - 7-bit active-low segment pattern {g,f,e,d,c,b,a}
-// Author:      Amr Said
+// Author:      Ibrahim Marzouk by the help of Ziad El-Rayes
 // Date:        2026-06-19
 // ----------------------------------------------------------------------------
 `timescale 1ns/1ps
