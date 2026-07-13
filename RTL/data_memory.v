@@ -12,17 +12,18 @@ reg [1023:0] mem [31:0];
 integer i;
 
 always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
+    if(!rst_n) begin //Reset 
         for(i = 0; i < 1023; i = i + 1)
             mem[i] = 32'b0;
     end
 
 
-    else if(memRead) begin
-        data_out <= mem[address];
+    else if(memRead) begin //Read from memory
+        data_out <= mem[address]; 
     end 
     else if(memWrite) begin
         mem[address] <= data_in;
     end
 end
+
 endmodule 
