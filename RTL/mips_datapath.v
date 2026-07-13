@@ -1,3 +1,4 @@
+// Done by Ibrahim Marzouk and Ziad El-Rayes
 module mips_datapath (
     input         clk,
     input         reset,
@@ -39,6 +40,7 @@ module mips_datapath (
     // ---------------------------------------------------------------
     wire [4:0] rs = instruction[25:21];
     wire [4:0] rt = instruction[20:16];
+    wire [4:0] rd = instruction[16:12];
 
     // ---------------------------------------------------------------
     // Register file: reads rs/rt, writes back under external control
@@ -54,5 +56,9 @@ module mips_datapath (
         .read_data_1 (read_data_1),
         .read_data_2 (read_data_2)
     );
+    SevenSegDecoder hex0 (.bin(pc),           .seg(HEX0)); 
+    SevenSegDecoder hex1 (.bin(rs),           .seg(HEX1)); 
+    SevenSegDecoder hex2 (.bin(rt),           .seg(HEX2)); 
+    SevenSegDecoder hex3 (.bin(rd),           .seg(HEX3); 
 
 endmodule
