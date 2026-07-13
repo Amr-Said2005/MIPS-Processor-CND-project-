@@ -14,8 +14,7 @@ module mips_datapath (
     output [31:0] pc,             // current program counter (word address)
     output [31:0] instruction,    // fetched instruction
     output [31:0] read_data_1,    // rs operand
-    output [31:0] read_data_2,     // rt operand
-    output [31:0] read_data_3     //rd oprand
+    output [31:0] read_data_2     // rt operand
 );
 
     // ---------------------------------------------------------------
@@ -52,12 +51,10 @@ module mips_datapath (
         .reg_write   (reg_write),
         .read_reg_1  (rs),
         .read_reg_2  (rt),
-        .read_reg_3  (rd),
         .write_reg   (write_reg),
         .write_data  (write_data),
         .read_data_1 (read_data_1),
-        .read_data_2 (read_data_2),
-        .read_data_3 (read_data_3)
+        .read_data_2 (read_data_2)
     );
     wire [2:0] rs1;
     wire [1:0] rs2;
