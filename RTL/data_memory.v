@@ -14,7 +14,7 @@ integer i;
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin //Reset 
         for(i = 0; i < 1023; i = i + 1)
-            mem[i] = 32'b0;
+            mem[i] <= 32'b0;
     end
 
 
