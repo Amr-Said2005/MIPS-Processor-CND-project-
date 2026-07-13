@@ -14,7 +14,8 @@ module mips_datapath (
     output [31:0] pc,             // current program counter (word address)
     output [31:0] instruction,    // fetched instruction
     output [31:0] read_data_1,    // rs operand
-    output [31:0] read_data_2     // rt operand
+    output [31:0] read_data_2,     // rt operand
+    output [31:0] read_data_3     //rd oprand
 );
 
     // ---------------------------------------------------------------
@@ -51,14 +52,30 @@ module mips_datapath (
         .reg_write   (reg_write),
         .read_reg_1  (rs),
         .read_reg_2  (rt),
+        .read_reg_3  (rd),
         .write_reg   (write_reg),
         .write_data  (write_data),
         .read_data_1 (read_data_1),
-        .read_data_2 (read_data_2)
+        .read_data_2 (read_data_2),
+        .read_data_3 (read_data_3)
     );
-    SevenSegDecoder hex0 (.bin(pc),           .seg(HEX0)); 
-    SevenSegDecoder hex1 (.bin(rs),           .seg(HEX1)); 
-    SevenSegDecoder hex2 (.bin(rt),           .seg(HEX2)); 
-    SevenSegDecoder hex3 (.bin(rd),           .seg(HEX3); 
+    wire [2:0] rs1;
+    wire [1:0] rs2;
+    wire [3:0] rt1;
+    wire [1:0] rt2;
+    wire [3:0] rd1;
+    wire [1:0] rd2;
+    assign rs1 = rs[2:0];
+    assign rs2 = rs[4:3];
+    assign rt1 = rt[2:0];
+    assign rt2 = rt[4:3];
+    assign rd1 = rd[2:0];
+    assign rd2 = rd[4:3];
+    SevenSegDecoder hex0 (.bin(rs1),           .seg(HEX0)); 
+    SevenSegDecoder hex1 (.bin(rs2),           .seg(HEX1)); 
+    SevenSegDecoder hex2 (.bin(rt1),           .seg(HEX2)); 
+    SevenSegDecoder hex3 (.bin(rt2),           .seg(HEX3)); 
+    SevenSegDecoder hex4 (.bin(rd1),           .seg(HEX4)); 
+    SevenSegDecoder hex5 (.bin(rd2),           .seg(HEX5)); 
 
 endmodule
