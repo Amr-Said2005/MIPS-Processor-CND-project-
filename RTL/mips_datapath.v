@@ -1,21 +1,60 @@
 // Done by Ibrahim Marzouk and Ziad El-Rayes
 module mips_datapath (
-    input         clk,
-    input         reset,
+    input wire clk,
+    input wire reset,
 
     // --- Write-back controls (not yet generated: no ALU/control unit yet) ---
     // For now these are driven from outside so the wiring can be tested.
     // Later they come from the control unit, ALU, and RegDst/MemToReg muxes.
-    input         reg_write,      // RegWrite control signal
-    input  [4:0]  write_reg,      // destination register (RegDst mux output)
-    input  [31:0] write_data,     // data to write back (MemToReg mux output)
+    input wire reg_write,      // RegWrite control signal
+    input wire [4:0]  write_reg,      // destination register (RegDst mux output)
+    input wire [31:0] write_data,     // data to write back (MemToReg mux output)
+    input wire [5:0]  alu_ctrl,
+    input wire RegDst,     // Controls Write Register MUX
+    input wire RegWrite,   // Enables writing to Register File
+    input wire ALUSrc,     // Controls ALU B-operand MUX
+    input wire [1:0] ALUOp,// Goes to ALU Control
+    input wire MemWrite,   // Enables writing to Data Memory
+    input wire MemRead,    // Enables reading from Data Memory
+    input wire MemtoReg,   // Controls Write Data MUX
+    input wire PCSrc,      // Controls Next PC MUX
+    input  wire [5:0] opcode,
+    input  wire [5:0] funct,    // 4-bit — from instruction[3:0]
 
     // --- Observation outputs (handy for the testbench) ---
-    output [31:0] pc,             // current program counter (word address)
-    output [31:0] instruction,    // fetched instruction
-    output [31:0] read_data_1,    // rs operand
-    output [31:0] read_data_2     // rt operand
+    output wire [31:0] pc,             // current program counter (word address)
+    output wire [31:0] instruction,    // fetched instruction
+    output wire [31:0] read_data_1,    // rs operand
+    output wire [31:0] read_data_2,     // rt operand
+    output wire Zero,
+    output reg  CarryOut,   // Carry output for add/sub
+    output reg  Overflow,   // Signed overflow flag
+    output wire Negative,   // MSB of Result
+    output reg  Branch,
+    output reg  Jump,
+    output reg  pmc,
+    output reg  JMN,
+    output reg  swi_inc,
+    output reg  Extd
 );
+    control_unit CU(
+        .opcode(opcode),
+        .zero(Zero),
+        .RegDest(RegDst),
+        .RegWrite(RegWrite),
+        .ALUSrc(ALUSrc),
+        .ALUop(ALUOp),
+        .MemRead(MemRead),
+        .MemWrite(MemWrite),
+        .MemtoReg(MemtoReg),
+        .Branch(Branch),
+        .JMN(JMN),
+        .Jump(Jump),
+        .pmc(pmc),
+        .swi_inc(swi_inc),
+        .Extd(Extd),
+        .PCSrc(PCSrc)  
+    );
 
     // ---------------------------------------------------------------
     // Program counter: advances to the next word each clock
@@ -24,6 +63,11 @@ module mips_datapath (
         .clk   (clk),
         .reset (reset),
         .pc    (pc)
+    );
+    alu_control ACU(
+        .ALUop(ALUOp)
+        .funct(funct)
+        .alu_ctrl(alu_ctrl)
     );
 
     // ---------------------------------------------------------------
@@ -45,6 +89,17 @@ module mips_datapath (
     // ---------------------------------------------------------------
     // Register file: reads rs/rt, writes back under external control
     // ---------------------------------------------------------------
+    ALU ALU_one (
+        .A(read_data_1),
+        .B(read_data_2),
+        .alu_ctrl(alu_ctrl),
+        .result(write_data),
+        .zero(zero),
+        .CarryOut(CarryOut),
+        .Overflow(Overflow),
+        .Negative(Negative)
+    );
+    
     register_file RF (
         .clk         (clk),
         .reset       (reset),
@@ -55,6 +110,16 @@ module mips_datapath (
         .write_data  (write_data),
         .read_data_1 (read_data_1),
         .read_data_2 (read_data_2)
+    );
+    data_memory DM (
+        .address(write_data), 
+        .memRead(MemRead),
+        .memWrite(MemWrite),
+        .clk(clk),
+        .data_in(read_data_2),
+        .rst_a(~reset),
+        .rst_r(1'b1),
+        .data_out(mem_read_data)
     );
     wire [2:0] rs1;
     wire [1:0] rs2;
