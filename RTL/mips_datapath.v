@@ -41,7 +41,7 @@ module mips_datapath (
     control_unit CU(
         .opcode(opcode),
         .zero(Zero),
-        .RegDest(RegDst),
+        .RegDst(RegDst),
         .RegWrite(RegWrite),
         .ALUSrc(ALUSrc),
         .ALUop(ALUOp),
@@ -94,8 +94,8 @@ module mips_datapath (
         .A(read_data_1),
         .B(read_data_2),
         .alu_ctrl(alu_ctrl),
-        .result(write_data),
-        .zero(zero),
+        .Result(write_data),
+        .Zero(zero),
         .CarryOut(CarryOut),
         .Overflow(Overflow),
         .Negative(Negative)
