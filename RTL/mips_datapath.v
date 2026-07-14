@@ -20,6 +20,7 @@ module mips_datapath (
     input wire PCSrc,      // Controls Next PC MUX
     input  wire [5:0] opcode,
     input  wire [5:0] funct,    // 4-bit — from instruction[3:0]
+    output reg [31:0] data_out,
 
     // --- Observation outputs (handy for the testbench) ---
     output wire [31:0] pc,             // current program counter (word address)
@@ -119,7 +120,7 @@ module mips_datapath (
         .data_in(read_data_2),
         .rst_a(~reset),
         .rst_r(1'b1),
-        .data_out(mem_read_data)
+        .data_out(data_out)
     );
     wire [2:0] rs1;
     wire [1:0] rs2;
