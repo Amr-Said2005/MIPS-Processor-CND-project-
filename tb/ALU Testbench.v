@@ -78,7 +78,7 @@ module ALU_tb;
         check_result(32'd5, "SUB 10 - 5");
 
         // -------------------------
-        // SUB zero test, useful for beq
+        // SUB zero test
         // -------------------------
         A = 32'd8;
         B = 32'd8;
@@ -154,9 +154,6 @@ module ALU_tb;
         else
             $display("FAIL: ADD overflow not detected");
 
-        // -------------------------
-        // Finish simulation
-        // -------------------------
         $display("ALU Testbench Finished.");
         $stop;
     end
