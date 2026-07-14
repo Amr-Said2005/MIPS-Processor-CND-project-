@@ -8,19 +8,19 @@ module mips_datapath (
     // Later they come from the control unit, ALU, and RegDst/MemToReg muxes.
     input wire reg_write,      // RegWrite control signal
     input wire [4:0]  write_reg,      // destination register (RegDst mux output)
-    input wire [31:0] write_data,     // data to write back (MemToReg mux output)
-    input wire [5:0]  alu_ctrl,
+    output wire [31:0] write_data,     // data to write back (MemToReg mux output)
+    output wire [5:0]  alu_ctrl,
     input wire RegDst,     // Controls Write Register MUX
     input wire RegWrite,   // Enables writing to Register File
     input wire ALUSrc,     // Controls ALU B-operand MUX
-    input wire [1:0] ALUOp,// Goes to ALU Control
-    input wire MemWrite,   // Enables writing to Data Memory
-    input wire MemRead,    // Enables reading from Data Memory
+    output wire [1:0] ALUOp,// Goes to ALU Control
+    output wire MemWrite,   // Enables writing to Data Memory
+    output wire MemRead,    // Enables reading from Data Memory
     input wire MemtoReg,   // Controls Write Data MUX
     input wire PCSrc,      // Controls Next PC MUX
     input  wire [5:0] opcode,
     input  wire [5:0] funct,    // 4-bit — from instruction[3:0]
-    output reg [31:0] data_out,
+    output wire [31:0] data_out,
 
     // --- Observation outputs (handy for the testbench) ---
     output wire [31:0] pc,             // current program counter (word address)
@@ -28,15 +28,15 @@ module mips_datapath (
     output wire [31:0] read_data_1,    // rs operand
     output wire [31:0] read_data_2,     // rt operand
     output wire Zero,
-    output reg  CarryOut,   // Carry output for add/sub
-    output reg  Overflow,   // Signed overflow flag
+    output wire  CarryOut,   // Carry output for add/sub
+    output wire  Overflow,   // Signed overflow flag
     output wire Negative,   // MSB of Result
-    output reg  Branch,
-    output reg  Jump,
-    output reg  pmc,
-    output reg  JMN,
-    output reg  swi_inc,
-    output reg  Extd
+    output wire  Branch,
+    output wire  Jump,
+    output wire  pmc,
+    output wire  JMN,
+    output wire  swi_inc,
+    output wire  Extd
 );
     control_unit CU(
         .opcode(opcode),
