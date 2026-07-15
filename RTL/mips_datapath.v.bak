@@ -1,0 +1,161 @@
+module mips_datapath (
+    input         clk,
+    input         reset,
+
+    // --- Observation outputs (handy for the testbench) ---
+    output [31:0] pc,             // current program counter (word address)
+    output [31:0] instruction,    // fetched instruction
+    output [31:0] alu_result,     // ALU output
+    output [31:0] write_back_data // value written back to the register file
+);
+
+    // ===============================================================
+    // Instruction field decode
+    //   [31:26] opcode  [25:21] rs  [20:16] rt  [15:11] rd  [15:0] imm
+    // ===============================================================
+    wire [5:0]  opcode = instruction[31:26];
+    wire [4:0]  rs     = instruction[25:21];
+    wire [4:0]  rt     = instruction[20:16];
+    wire [4:0]  rd     = instruction[15:11];
+    wire [15:0] imm    = instruction[15:0];
+    wire [3:0]  funct  = instruction[3:0];   // funct field for ALUcontrol (4-bit)
+
+    // ===============================================================
+    // Control unit: decodes opcode -> control signals
+    // ===============================================================
+    wire        RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg;
+    wire        Branch, Jump, pmc, JMN, swi_inc, Extd, PCSrc;
+    wire [1:0]  ALUop;
+    wire        zero;
+
+    control_unit CU (
+        .opcode   (opcode),
+        .zero     (zero),
+        .RegDst   (RegDst),
+        .RegWrite (RegWrite),
+        .ALUSrc   (ALUSrc),
+        .ALUop    (ALUop),
+        .MemRead  (MemRead),
+        .MemWrite (MemWrite),
+        .MemtoReg (MemtoReg),
+        .Branch   (Branch),
+        .Jump     (Jump),
+        .pmc      (pmc),
+        .JMN      (JMN),
+        .swi_inc  (swi_inc),
+        .Extd     (Extd),
+        .PCSrc    (PCSrc)
+    );
+
+    // ===============================================================
+    // Register file: reads rs/rt, writes back the MemToReg mux output
+    // ===============================================================
+    wire [31:0] read_data_1, read_data_2;
+    wire [4:0]  write_reg;            // RegDst mux output
+
+    register_file RF (
+        .clk         (clk),
+        .reset       (reset),
+        .reg_write   (RegWrite),
+        .read_reg_1  (rs),
+        .read_reg_2  (rt),
+        .write_reg   (write_reg),
+        .write_data  (write_back_data),
+        .read_data_1 (read_data_1),
+        .read_data_2 (read_data_2)
+    );
+
+    // RegDst mux: destination = rt (I-type) or rd (R-type)
+    Mux2to1 #(5) RegDstMux (
+        .A   (rt),
+        .B   (rd),
+        .Sel (RegDst),
+        .Y   (write_reg)
+    );
+
+    // ===============================================================
+    // Sign extension + ALU source select
+    // ===============================================================
+    wire [31:0] sign_ext_imm;
+    wire [31:0] alu_src_b;
+
+    sign_extend SE (
+        .in  (imm),
+        .out (sign_ext_imm)
+    );
+
+    // ALUSrc mux: ALU operand B = register rt or the sign-extended immediate
+    Mux2to1 ALUSrcMux (
+        .A   (read_data_2),
+        .B   (sign_ext_imm),
+        .Sel (ALUSrc),
+        .Y   (alu_src_b)
+    );
+
+    // ===============================================================
+    // ALU control + ALU
+    // ===============================================================
+    wire [3:0] alu_ctrl;
+
+    ALUcontrol AC (
+        .aluOP   (ALUop),
+        .funct   (funct),
+        .aluctrl (alu_ctrl)
+    );
+
+    ALU ALU_UNIT (
+        .A          (read_data_1),
+        .B          (alu_src_b),
+        .ALUControl (alu_ctrl),
+        .Result     (alu_result),
+        .Zero       (zero),
+        .CarryOut   (),               // unused for now
+        .Overflow   (),               // unused for now
+        .Negative   ()                // unused for now
+    );
+
+    // ===============================================================
+    // Data memory + write-back select
+    // ===============================================================
+    wire [31:0] mem_read_data;
+
+    data_memory DMEM (
+        .clk        (clk),
+        .mem_read   (MemRead),
+        .mem_write  (MemWrite),
+        .address    (alu_result),
+        .write_data (read_data_2),
+        .read_data  (mem_read_data)
+    );
+
+    // MemToReg mux: write-back value = ALU result or memory read data
+    Mux2to1 MemToRegMux (
+        .A   (alu_result),
+        .B   (mem_read_data),
+        .Sel (MemtoReg),
+        .Y   (write_back_data)
+    );
+
+    // ===============================================================
+    // Branch / next-PC logic
+    //   Word-addressed: target = (pc + 1) + offset  (no shift-left-2)
+    // ===============================================================
+    wire [31:0] branch_target = pc + 32'd1 + sign_ext_imm;
+
+    program_counter PC (
+        .clk           (clk),
+        .reset         (reset),
+        .pc_src        (PCSrc),
+        .branch_target (branch_target),
+        .pc            (pc)
+    );
+
+    // ===============================================================
+    // Instruction memory: word-addressed by the PC
+    // ===============================================================
+    instruction_memory IMEM (
+        .read_address (pc),
+        .instruction  (instruction)
+    );
+
+endmodule
