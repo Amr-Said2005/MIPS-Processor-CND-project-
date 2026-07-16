@@ -95,6 +95,40 @@ de10_standard_pins.tcl  Quartus pin assignments for the DE10-Standard
 
 ---
 
+## Testbenches
+
+The spec requires **self-checking** testbenches that *compare* expected register/memory
+state — not just dump waveforms. Status:
+
+| Testbench | Covers | Compiles | Self-checking | State |
+|---|---|---|---|---|
+| `ALU_tb.v` | `ALU` | ✅ | ✅ prints PASS/FAIL | ✅ **Done** — 11 cases incl. signed SLT, carry, overflow |
+| `tb_mips_datapath.v` | **full system** | ✅ | ❌ trace only | 🟡 runs the whole program + dumps regs/memory, but **asserts nothing** |
+| `data_memory_tb.v` | `data_memory` | ✅ | ❌ waveform only | 🟡 no checks; also predates the **big-endian** switch — re-verify |
+| `tb_CU.v` | `control_unit` | ❌ | ✅ (47 checks) | 🔴 **broken**: line 1 uses `'timescale` (apostrophe) instead of `` `timescale `` |
+| `ALUcontrol.v` | `ALUcontrol` | ❌ | ✅ (17 checks) | 🔴 **broken**: same apostrophe bug **+** assumes old 4-bit `funct`/`aluctrl` (now 6-bit) |
+| `tb_program_counter.v` | `program_counter` | ⚠️ | ❌ | 🔴 **stale**: only wires `.clk/.reset/.pc`; misses `pc_src`/`branch_target`/`pc_plus4`, so the PC is driven by floating inputs |
+
+### Testbenches still needed
+
+**Fix the broken ones (quick wins — the logic is already written):**
+1. `tb_CU.v` — change `'timescale` → `` `timescale ``
+2. `ALUcontrol.v` — same fix **+** widen `funct`/`aluctrl` to `[5:0]`; rename to `ALUcontrol_tb.v`
+3. `tb_program_counter.v` — rewrite against the current PC interface
+
+**Make existing ones self-checking (required by the spec):**
+4. `tb_mips_datapath.v` — add expected-vs-actual assertions with a PASS/FAIL summary
+5. `data_memory_tb.v` — add checks, including **big-endian byte order**
+
+**Modules with no testbench at all:**
+6. `register_file` — read/write ports, `$zero` behaviour, async reset
+7. `sign_extend` — `Extd` sign vs zero extend
+8. `instruction_memory` — byte assembly / big-endian fetch
+9. `ClockDivider` — division ratio, reset behaviour
+10. `Mux2to1`, `display`, `SevenSegDecoder` — small, low priority
+
+---
+
 ## How to simulate
 
 `instruction_memory` loads `instruction.mem.txt` relative to the **simulator's working
@@ -173,10 +207,13 @@ forwarding units with load-use stalls.
 - **Mixed reset polarity.** `program_counter` / `register_file` / `ClockDivider` are
   active-high; `data_memory` (`rst_a`, `rst_r`) is active-low, forcing a `~reset` in
   `mips_datapath`. Pick one convention internally.
-- **`tb/tb_program_counter.v` is stale** — written against the old PC interface (no
-  `pc_next`), does not compile.
-- **`tb/ALUcontrol.v`** — uses `'timescale` (apostrophe) instead of `` `timescale ``, so it
-  does not compile; it also assumes the old 4-bit `funct`/`aluctrl` (now 6-bit).
+- **Two testbenches don't compile** — `tb_CU.v` and `ALUcontrol.v` both start with
+  `'timescale` (apostrophe) instead of `` `timescale ``. Their *contents* are good
+  (47 and 17 checks respectively); it's a one-character fix each. `ALUcontrol.v`
+  additionally assumes the old 4-bit `funct`/`aluctrl`.
+- **`tb/tb_program_counter.v` is stale** — only connects `.clk/.reset/.pc`, so the PC's
+  `pc_src`/`branch_target` inputs float.
+- **Only 1 of 6 testbenches is self-checking** (`ALU_tb.v`). See the Testbenches section.
 - **Pin numbers in `de10_standard_pins.tcl` are unverified** against the DE10-Standard
   User Manual / Terasic golden-top `.qsf`. Check before programming the board.
 - **20-bit vs 32-bit** instruction format (see Architecture note above).
