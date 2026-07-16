@@ -26,9 +26,10 @@ module register_file (
     assign read_data_2 = (read_reg_2 == 5'd0) ? 32'd0 : registers[read_reg_2];
 
     // Synchronous write. Writes to register 0 are ignored ($zero is constant).
-    always @(posedge clk) 
+    // Reset is ASYNC: the divided CPU clock is stopped while reset is held.
+    always @(posedge clk or posedge reset)
     begin
-        if (reset) 
+        if (reset)
         begin
             for (i = 0; i < 32; i = i + 1)
             registers[i] <= 32'd0;

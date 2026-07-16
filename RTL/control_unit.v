@@ -66,7 +66,7 @@ module control_unit (
                 MemtoReg = 1'b0;
                 Branch   = 1'b0;
                 Jump     = 1'b0;
-                Extd     = 1'bx;
+                Extd     = 1'b0;
             end
 
             ADDI: begin                 
@@ -109,26 +109,26 @@ module control_unit (
             end
 
             SW: begin                   
-                RegDst   = 1'bx;
+                RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b1;
                 ALUop    = 2'b01;
                 MemRead  = 1'b0;
                 MemWrite = 1'b1;
-                MemtoReg = 1'bx;
+                MemtoReg = 1'b0;
                 Branch   = 1'b0;
                 Jump     = 1'b0;
                 Extd     = 1'b1;
             end
 
             BEQ: begin                  
-                RegDst   = 1'bx;
+                RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b0;
                 ALUop    = 2'b10;       
                 MemRead  = 1'b0;
                 MemWrite = 1'b0;
-                MemtoReg = 1'bx;
+                MemtoReg = 1'b0;
                 Branch   = 1'b1;        
                 Jump     = 1'b0;
                 Extd     = 1'b1;
@@ -138,7 +138,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b0;
-                ALUop    = 2'bxx;       
+                ALUop    = 2'b00;       
                 MemRead  = 1'b0;
                 MemWrite = 1'b0;
                 MemtoReg = 1'b0;
@@ -151,7 +151,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b1;        
-                ALUop    = 2'bxx;      
+                ALUop    = 2'b00;      
                 MemRead  = 1'b1;
                 MemWrite = 1'b0;
                 MemtoReg = 1'b0;        
@@ -165,7 +165,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b1;
                 ALUSrc   = 1'b1;
-                ALUop    = 2'bxx;       
+                ALUop    = 2'b00;       
                 MemRead  = 1'b0;
                 MemWrite = 1'b1;
                 MemtoReg = 1'b0;
@@ -179,7 +179,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b1;
-                ALUop    = 2'bxx;
+                ALUop    = 2'b00;
                 MemRead  = 1'b1;
                 MemWrite = 1'b1;
                 MemtoReg = 1'b0;

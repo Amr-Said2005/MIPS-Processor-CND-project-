@@ -1,5 +1,5 @@
 module instruction_memory (
-    input  [31:0] pc,   // word address (PC counts by 4)
+    input  [31:0] pc,   // byte address (PC counts by 4)
     output [31:0] instruction
 );
 
