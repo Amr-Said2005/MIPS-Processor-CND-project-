@@ -10,12 +10,24 @@ A single-cycle RISC-style processor in Verilog, targeting the **Terasic DE10-Sta
 | Phase | Scope | State |
 |---|---|---|
 | **1** | ALU & Register File | ✅ **Done** |
-| **2** | Single-cycle CPU | 🟡 **In progress** — 10/14 instructions working |
+| **2** | Single-cycle CPU | 🟢 **All 14/14 instructions working** — verification/report items remain |
 | **3** | 5-stage pipeline | ⬜ Not started |
 | **4** | Hazard detection & forwarding | ⬜ Not started |
 
-**Verified in both Icarus Verilog and ModelSim ASE 10.5b — 0 errors, 0 warnings.**
-The CPU has **not yet been run on hardware** (no Quartus project / netlist yet).
+**Simulation:** verified in both Icarus Verilog and ModelSim ASE 10.5b — 0 errors.
+
+**Hardware:** full Quartus compile succeeds on the DE10-Standard and **timing is met**.
+
+| Metric | Value |
+|---|---|
+| Logic utilisation | 3,871 / 41,910 ALMs (**9 %**) |
+| Registers | 2,304 |
+| Pins | 57 / 499 |
+| Fmax (Slow 1100mV 85C) | **80.59 MHz** |
+| Setup slack @ 50 MHz | **+7.69 ns** ✅ |
+| Hold slack | +0.505 ns ✅ |
+
+The CPU runs directly on the 50 MHz board clock (`CLOCK_50`).
 
 ---
 
@@ -26,8 +38,13 @@ The CPU has **not yet been run on hardware** (no Quartus project / netlist yet).
 - **Byte-addressed**: `PC + 4` per instruction; branch offsets shifted left 2
 - **Big-endian**: MSB stored at the lowest address (both memories)
 - **Register file**: 32 × 32-bit, 2 async read ports, 1 sync write port, `$zero` hardwired
-- **Clock**: `ClockDivider` drops the 50 MHz board clock to **1 Hz** (one instruction/second)
-  so the HEX displays are readable. `DIVISOR` is a parameter — simulation overrides it to 1.
+- **Clock**: `mips_datapath` is clock-agnostic (testbenches drive it at full speed).
+  The board wrapper `mips_top` instantiates `ClockDivider` — `cpu_clk = CLOCK_50/(2*DIVISOR)`,
+  default `25_000_000` → **1 Hz** so each instruction is visible for one second.
+  `tb_mips_top` overrides `DIVISOR` small to keep simulation short.
+- **Memories**: instruction ROM 128 words (512 B); data RAM 128 words / 512 bytes
+  (`ADDR_W` parameter)
+- **Reset**: asynchronous, active-high internally; `mips_top` inverts the active-low `KEY[0]`
 
 > **Deviation from the spec:** the handout specifies a **20-bit** instruction format
 > (`4/3/3/3/3/4`). This implementation uses a **32-bit** MIPS-style format
@@ -57,10 +74,10 @@ The CPU has **not yet been run on hardware** (no Quartus project / netlist yet).
 | `andi` | ✅ verified | zero-extended (`Extd=0`) |
 | `lw` `sw` | ✅ verified | byte-addressed, big-endian round-trip |
 | `beq` | ✅ verified | taken **and** not-taken paths |
-| `j` | 🔴 **not working** | no jump-target logic |
-| `jmn imm(rs)` | 🔴 **not implemented** | `PC = Memory[R[rs]+imm]` (indirect jump) |
-| `swi rt, imm(rs)` | 🔴 **not implemented** | `Memory[R[rs]+imm] = R[rt]`, then `R[rs] += imm` |
-| `pmc (rt), imm(rs)` | 🔴 **not implemented** | `PC = Memory[R[rt]]` **and** `Memory[R[rs]+imm] = PC+4` |
+| `j` | ✅ verified | forward + backward jumps; loops confirmed running |
+| `jmn imm(rs)` | ✅ verified | `PC = Memory[R[rs]+imm]` — indirect jump via `MemTargetMux` |
+| `swi rt, imm(rs)` | ✅ verified | stores `R[rt]`, then `R[rs] += imm` (3-way RegDst mux) |
+| `pmc (rt), imm(rs)` | ✅ verified | `PC = Memory[R[rt]]` **and** `Memory[R[rs]+imm] = PC+4` (dual-address memory) |
 
 ---
 
@@ -71,13 +88,13 @@ RTL/
   mips_top.v            board top-level (DE10 pins, KEY[0] -> active-high reset)
   mips_datapath.v       single-cycle datapath (parameterized DIVISOR)
   program_counter.v     PC register + "+4" adder + next-PC select
-  instruction_memory.v  4096 B, byte-addressed, loads instruction.mem.txt
+  instruction_memory.v  word ROM, 128 instrs, loads instruction.mem.txt
   instruction.mem.txt   test program, ONE BYTE PER LINE (MSB first)
   register_file.v       32x32, async read / sync write, async reset
   control_unit.v        opcode -> control signals
   ALUcontrol.v          ALUop + funct[5:0] -> 6-bit ALU op
   ALU.V                 add/sub/and/or/slt + Zero/Carry/Overflow/Negative
-  data_memory.v         4096 B, byte-addressed, big-endian, combinational read
+  data_memory.v         512 B, dual-address, byte-addressed, big-endian, combinational read
   sign_extend.v         Extd-controlled sign/zero extend
   Mux2to1.v             parameterized 2:1 mux
   display.v             value -> two decimal digits
@@ -103,6 +120,8 @@ state — not just dump waveforms. Status:
 | Testbench | Covers | Compiles | Self-checking | State |
 |---|---|---|---|---|
 | `ALU_tb.v` | `ALU` | ✅ | ✅ prints PASS/FAIL | ✅ **Done** — 11 cases incl. signed SLT, carry, overflow |
+| `tb_mips_top.v` | **board top** (`mips_top`) | ✅ | ✅ 7 checks | ✅ **Done** — drives only `CLOCK_50`/`KEY`, observes only `HEX`/`LEDR`; prints a per-step "board view" table for cross-referencing waveforms with the physical FPGA; verifies the frozen halt state |
+| `tb_register_file.v` | `register_file` | ✅ | ✅ error counter | ✅ **Done** — reset-clear, write/read, `$zero` immutability, write-enable gating, dual async reads; passes in Icarus **and** ModelSim |
 | `tb_mips_datapath.v` | **full system** | ✅ | ❌ trace only | 🟡 runs the whole program + dumps regs/memory, but **asserts nothing** |
 | `data_memory_tb.v` | `data_memory` | ✅ | ❌ waveform only | 🟡 no checks; also predates the **big-endian** switch — re-verify |
 | `tb_CU.v` | `control_unit` | ❌ | ✅ (47 checks) | 🔴 **broken**: line 1 uses `'timescale` (apostrophe) instead of `` `timescale `` |
@@ -121,11 +140,10 @@ state — not just dump waveforms. Status:
 5. `data_memory_tb.v` — add checks, including **big-endian byte order**
 
 **Modules with no testbench at all:**
-6. `register_file` — read/write ports, `$zero` behaviour, async reset
-7. `sign_extend` — `Extd` sign vs zero extend
-8. `instruction_memory` — byte assembly / big-endian fetch
-9. `ClockDivider` — division ratio, reset behaviour
-10. `Mux2to1`, `display`, `SevenSegDecoder` — small, low priority
+6. `sign_extend` — `Extd` sign vs zero extend
+7. `instruction_memory` — word ROM indexing / init contents
+8. `ClockDivider` — division ratio, reset behaviour
+9. `Mux2to1`, `display`, `SevenSegDecoder` — small, low priority
 
 ---
 
@@ -155,9 +173,28 @@ cd RTL
 vsim -onfinish stop -do ../tb/wave.do tb_mips_datapath
 ```
 
-**Quartus pin assignments**
+**Quartus (hardware)**
 ```bash
-quartus_sh -t de10_standard_pins.tcl     # top-level entity: mips_top
+quartus_sh -t de10_standard_pins.tcl     # pin assignments; top-level = mips_top
+```
+The Quartus project lives outside this repo at
+`FPGA_WORKSPACE/quartus_projects/MIPS_processor/`. It needs `mips_timing.sdc`
+(50 MHz constraint) — **without an `.sdc`, Quartus assumes a 1 GHz clock and every
+timing report fails.** Program the board with `output_files/*.sof` via the
+Programmer (hardware: `DE-SoC`).
+
+### Writing a test program
+`RTL/instruction.mem.txt` holds **one 32-bit binary word per line**; line *N* is the
+instruction at byte address *N*×4.
+
+> **`j` takes a WORD address, not a byte address.** To jump to byte 16, encode `4`.
+> Getting this wrong fails silently — the PC just lands somewhere unexpected.
+
+A loop looks like:
+```asm
+     addi $1,$0,0     # 0  (w0)  counter = 0
+     addi $1,$1,1     # 4  (w1)  counter++      <-- loop top
+     j    1           # 8  (w2)  jump to word 1 = byte 4
 ```
 
 ---
@@ -166,28 +203,16 @@ quartus_sh -t de10_standard_pins.tcl     # top-level entity: mips_top
 
 ### Phase 2 (current milestone)
 
-1. **`j`** — add a jump-target path (`{(PC+4)[31:28], addr, 2'b00}` or the course's format).
-2. **`jmn`** — `PC = Memory[R[rs]+imm]`. Needs the PC to be loadable from `mem_data`.
-3. **`swi`** — writes back to **`rs`**; the RegDst mux only selects `rt`/`rd` today.
-4. **`pmc`** — **hardest item.** Reads `Memory[R[rt]]` *and* writes `Memory[R[rs]+imm]`
-   in the same cycle: two different addresses. `data_memory` has a single address port,
-   so this needs a dual-port memory or a multi-cycle `pmc`.
+All 14 instructions are implemented. What remains is verification and report work:
 
-   Datapath changes these imply:
-   - PC mux **2-way -> 4-way**: `pc+4` / `branch_target` / `jump_target` / `mem_data`
-   - RegDst mux **2-way -> 3-way** (add `rs`)
-   - Data-memory write-data mux: `read_data_2` **or** `PC+4` (for `pmc`)
-   - Second data-memory port (for `pmc`)
-
-5. **Control-unit bug:** `jmn`, `swi`, `pmc` all compute `R[rs] + imm`, so they need
-   `ALUop = 01` (add). `control_unit.v` currently sets `ALUop = 00` for them, which means
-   *R-type funct decode* — the ALU would act on junk funct bits.
-
-6. **Self-checking testbenches** — the spec explicitly requires testbenches that *compare*
-   expected register/memory state. The current bench prints a trace but does not assert.
-
-7. **Synthesis** — produce the flattened gate netlist, timing reports, and RTL schematic.
-   None of this is done; there is no `.qpf`/`.qsf` project yet.
+1. **Self-checking testbenches** — the spec explicitly requires testbenches that *compare*
+   expected register/memory state. The full-system bench still only prints a trace
+   (the `jmn`/`swi`/`pmc` bring-up test was written self-checking — fold that style back
+   into `tb_mips_datapath.v`).
+2. **Netlist + RTL schematic** — synthesis and timing are done; the flattened gate netlist
+   and schematic capture for the report are not.
+3. **Re-run the Quartus compile** — the datapath changed (dual-address memory, two new
+   muxes); resource/timing numbers in this README are from the 11-instruction build.
 
 ### Phases 3-4
 5-stage pipeline (IF/ID/EX/MEM/WB) with pipeline registers, then the hazard-detection and
@@ -197,16 +222,21 @@ forwarding units with load-use stalls.
 
 ## Known issues / technical debt
 
-- **Slow Quartus compile (~30 min).** `data_memory` is a 4096-byte array with a
-  *combinational read* and an *async reset that clears all 4096 bytes*. It cannot map to
-  M10K block RAM, so it synthesizes to ~32K flip-flops plus a huge multiplexer.
-  Shrinking it (64-256 B) and dropping the mass reset should fix this.
-- **Derived clock.** The CPU is clocked by a flip-flop output (`ClockDivider`), not a
-  global clock buffer. Quartus will likely warn. The idiomatic fix is a *clock enable* on
-  the 50 MHz domain instead of a divided clock.
-- **Mixed reset polarity.** `program_counter` / `register_file` / `ClockDivider` are
-  active-high; `data_memory` (`rst_a`, `rst_r`) is active-low, forcing a `~reset` in
-  `mips_datapath`. Pick one convention internally.
+- **Board demo shows only the final state.** At 50 MHz the program finishes in ~560 ns;
+  the halt loop then freezes the displays at `08 beq 08 = 00`. You cannot *watch*
+  execution — for that, add single-stepping from a `KEY` (edge-detected clock enable).
+- **The divided CPU clock is a data-routed clock.** `mips_top` clocks the CPU from the
+  `ClockDivider` flip-flop output, which won't ride the global clock network — expect a
+  Quartus warning. Harmless at 1 Hz; the textbook fix is a clock *enable* on `CLOCK_50`.
+- **The `.sdc` lives outside the repo** (`quartus_projects/MIPS_processor/mips_timing.sdc`).
+  Without it Quartus defaults every clock to 1 GHz and *all* timing reports show red.
+  Worth copying into the repo so the constraints are version-controlled with the RTL.
+- **Mixed reset polarity.** `program_counter` / `register_file` are active-high;
+  `data_memory` (`rst_a`, `rst_r`) is active-low, forcing a `~reset` in `mips_datapath`.
+  Pick one convention internally.
+- **`RTL/mips_top.v.bak`** — stray backup file, should be deleted.
+- **`display` infers 9 `lpm_divide` blocks** (the `/10` and `%10`, three instances). Works
+  and fits, but a lookup table would be cheaper if area ever matters.
 - **Two testbenches don't compile** — `tb_CU.v` and `ALUcontrol.v` both start with
   `'timescale` (apostrophe) instead of `` `timescale ``. Their *contents* are good
   (47 and 17 checks respectively); it's a one-character fix each. `ALUcontrol.v`
@@ -217,24 +247,36 @@ forwarding units with load-use stalls.
 - **Pin numbers in `de10_standard_pins.tcl` are unverified** against the DE10-Standard
   User Manual / Terasic golden-top `.qsf`. Check before programming the board.
 - **20-bit vs 32-bit** instruction format (see Architecture note above).
-- **`pmc` spec ambiguity** — "store the *new* value of PC" vs the formula `PC + 4`.
-  Implemented intent should be the *return address* (old `PC+4`); confirm with the
-  instructor.
+- **`pmc` spec ambiguity** — the handout says "store the *new* value of PC" but writes
+  the formula `Memory[R[rs]+imm] = PC + 4`. Implemented as the **return address**
+  (address of the pmc instruction + 4), which is what makes a call/return usable.
+  Confirm with the instructor.
 
 ---
 
 ## Current test program
 
-`RTL/instruction.mem.txt` exercises the working instructions:
+`RTL/instruction.mem.txt` exercises **all 14 instructions** (28 words), ending in a
+halt loop (`beq $9,$9,-1` — also proves a **backward** branch offset) so the HEX
+displays freeze showing `08 beq 08 = 00` instead of running off into zeroed ROM.
+"trap" instructions (`addi $10,$0,99`) sit in the shadow of every jump/branch —
+if `$10` ever reads 99, a control-flow transfer failed to skip it.
 
-| Addr | Instruction | Result |
+| Bytes | Section | Proves |
 |---|---|---|
-| 0 | `addi $1,$0,5` | `$1 = 5` |
-| 4 | `addi $2,$0,3` | `$2 = 3` |
-| 8 | `add $3,$1,$2` | `$3 = 8` |
-| 12 | `sub $4,$1,$2` | `$4 = 2` |
-| 16 | `and $5,$1,$2` | `$5 = 1` |
-| 20 | `or $6,$1,$2` | `$6 = 7` |
-| 24 | `slt $7,$1,$2` | `$7 = 0` |
-| 28 | `sw $3,0($0)` | `mem[0] = 8` |
-| 32 | `lw $8,0($0)` | `$8 = 8` |
+| 0–28 | `addi addi add sub and or slt andi` | all arithmetic/logic |
+| 32–36 | `sw $3,0($0)` / `lw $9,0($0)` | memory round-trip (`$9=8`) |
+| 40–48 | `beq` ×2 + trap | not-taken **and** taken paths |
+| 52–56 | `j 15` + trap | direct jump |
+| 60–72 | `sw` target, `jmn 4($0)` + trap | indirect jump via memory |
+| 76–80 | `swi $6,8($12)` | store + post-increment (`mem[28]=7`, `$12=28`) |
+| 84–100 | setup, `pmc ($14),16($0)` + trap | call via memory + return addr saved |
+| 104 | `addi $15,$0,1` | pmc landed |
+| 108 | `beq $9,$9,-1` | halt loop + backward branch |
+
+Expected final state (all verified, 21/21 checks):
+```
+$1=5 $2=3 $3=8 $4=2 $5=1 $6=7 $7=0 $8=4 $9=8 $10=0
+$11=76 $12=28 $13=104 $14=12 $15=1
+mem[0]=8 mem[4]=76 mem[12]=104 mem[16]=100 mem[28]=7   PC halted at 108
+```

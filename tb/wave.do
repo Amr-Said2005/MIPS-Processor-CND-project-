@@ -42,11 +42,11 @@ add wave -label write_reg  -radix unsigned sim:/tb_mips_datapath/DUT/write_reg
 add wave -label write_data -radix signed   sim:/tb_mips_datapath/write_back_data
 
 add wave -divider "REGISTER FILE"
-add wave -label {$1} -radix signed sim:/tb_mips_datapath/DUT/RF/registers[1]
-add wave -label {$2} -radix signed sim:/tb_mips_datapath/DUT/RF/registers[2]
-add wave -label {$3} -radix signed sim:/tb_mips_datapath/DUT/RF/registers[3]
-add wave -label {$4} -radix signed sim:/tb_mips_datapath/DUT/RF/registers[4]
-add wave -label {$8} -radix signed sim:/tb_mips_datapath/DUT/RF/registers[8]
+add wave -label {$1} -radix signed {sim:/tb_mips_datapath/DUT/RF/registers[1]}
+add wave -label {$2} -radix signed {sim:/tb_mips_datapath/DUT/RF/registers[2]}
+add wave -label {$3} -radix signed {sim:/tb_mips_datapath/DUT/RF/registers[3]}
+add wave -label {$4} -radix signed {sim:/tb_mips_datapath/DUT/RF/registers[4]}
+add wave -label {$8} -radix signed {sim:/tb_mips_datapath/DUT/RF/registers[8]}
 
 run -all
 wave zoom full

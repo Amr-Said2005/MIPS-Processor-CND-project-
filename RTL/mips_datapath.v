@@ -1,13 +1,7 @@
 // Single-cycle MIPS datapath (byte-addressed: PC+4, branch offset shifted left 2)
-//
-// DIVISOR sets the CPU clock: cpu_clk = clk_in / (2 * DIVISOR).
-//   hardware   : 25_000_000 -> 50 MHz / 50e6 = 1 Hz (readable on the HEX displays)
-//   simulation : override to 1 so the CPU runs at clk_in speed
-//                e.g. mips_datapath #(.DIVISOR(1)) DUT (...);
-module mips_datapath #(
-    parameter DIVISOR = 25000000
-)(
-    input         clk_in,
+// Runs directly on the input clock (no divider).
+module mips_datapath (
+    input         clk,
     input         reset,
 
     // observation outputs
@@ -63,20 +57,39 @@ module mips_datapath #(
     wire [31:0] pc_plus4;                                   // from the PC
     wire [31:0] branch_offset = sign_ext_imm << 2;          // shift left 2
     wire [31:0] branch_target = pc_plus4 + branch_offset;
-    wire clk;
 
-    // Clock Divider to see the outputs on the FPGA (override DIVISOR in sim)
-    ClockDivider #(.DIVISOR(DIVISOR)) ClockDivider(
-        .clk_in(clk_in),
-        .clk_out(clk),
-        .rst(reset)
+    // j: word address in instruction[25:0], shifted left 2 for a byte address.
+    // The top 4 bits come from PC+4, so a jump stays in the current 256 MB region.
+    wire [31:0] jump_target = { pc_plus4[31:28], instruction[25:0], 2'b00 };
+
+    // PCSrc (from the control unit) is already (Branch & zero) | Jump | JMN | pmc,
+    // so it only decides *whether* to redirect; these muxes pick *which* target:
+    //   branch_target : beq            (PC+4 + offset<<2)
+    //   jump_target   : j              (from the instruction)
+    //   mem_data      : jmn / pmc      (indirect -- target loaded from memory)
+    wire [31:0] direct_target;
+    wire [31:0] taken_target;
+    wire [31:0] mem_data;         // data-memory read (declared here: used below)
+
+    Mux2to1 JumpTargetMux (
+        .A   (branch_target),
+        .B   (jump_target),
+        .Sel (Jump),
+        .Y   (direct_target)
+    );
+
+    Mux2to1 MemTargetMux (
+        .A   (direct_target),
+        .B   (mem_data),          // jmn: Memory[R[rs]+imm]   pmc: Memory[R[rt]]
+        .Sel (JMN | pmc),
+        .Y   (taken_target)
     );
 
     program_counter PC (
         .clk           (clk),
         .reset         (reset),
         .pc_src        (PCSrc),
-        .branch_target (branch_target),
+        .branch_target (taken_target),
         .pc            (pc),
         .pc_plus4      (pc_plus4)
     );
@@ -90,10 +103,20 @@ module mips_datapath #(
     wire [31:0] read_data_1, read_data_2;
     wire [4:0]  write_reg;
 
+    // 3-way destination select: rt (I-type) / rd (R-type) / rs (swi post-increment)
+    wire [4:0] regdst_rt_rd;
+
     Mux2to1 #(5) RegDstMux (
         .A   (rt),
         .B   (rd),
         .Sel (RegDst),
+        .Y   (regdst_rt_rd)
+    );
+
+    Mux2to1 #(5) SwiDstMux (
+        .A   (regdst_rt_rd),
+        .B   (rs),                // swi writes R[rs] <- R[rs] + imm
+        .Sel (swi_inc),
         .Y   (write_reg)
     );
 
@@ -146,17 +169,35 @@ module mips_datapath #(
     );
 
     // ---- data memory + MemtoReg mux ----
-    wire [31:0] mem_data;
+    // pmc uses BOTH ports at once: read Memory[R[rt]], write Memory[R[rs]+imm].
+    // Everything else reads and writes at the ALU result.
+    wire [31:0] dmem_read_addr;
+    wire [31:0] dmem_write_data;
+
+    Mux2to1 DmemReadAddrMux (
+        .A   (alu_result),        // lw / jmn : R[rs] + imm
+        .B   (read_data_2),       // pmc      : R[rt]
+        .Sel (pmc),
+        .Y   (dmem_read_addr)
+    );
+
+    Mux2to1 DmemWriteDataMux (
+        .A   (read_data_2),       // sw / swi : R[rt]
+        .B   (pc_plus4),          // pmc      : return address
+        .Sel (pmc),
+        .Y   (dmem_write_data)
+    );
 
     data_memory DMEM (
-        .address  (alu_result),
-        .memRead  (MemRead),
-        .memWrite (MemWrite),
-        .clk      (clk),
-        .data_in  (read_data_2),
-        .rst_a    (~reset),      // active-low: clears memory while reset is high
-        .rst_r    (1'b1),        // per-word reset unused
-        .data_out (mem_data)
+        .read_address  (dmem_read_addr),
+        .write_address (alu_result),   // sw / swi / pmc all write at R[rs]+imm
+        .memRead       (MemRead),
+        .memWrite      (MemWrite),
+        .clk           (clk),
+        .data_in       (dmem_write_data),
+        .rst_a         (~reset),   // active-low: clears memory while reset is high
+        .rst_r         (1'b1),     // per-word reset unused
+        .data_out      (mem_data)
     );
 
     Mux2to1 MemToRegMux (

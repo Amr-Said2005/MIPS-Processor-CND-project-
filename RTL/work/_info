@@ -1,0 +1,351 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/amr19/OneDrive/Desktop/FPGA_WORKSPACE/HDLs/Verilog/MIPS-Processor-CND-project-/RTL
+vALU
+Z1 !s110 1784461047
+!i10b 1
+!s100 CWC;1[f@Ae2fU;f^2Z:dJ3
+IA`=WG`4YM`cKXP9OMnB5k2
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+Z3 w1784099957
+8ALU.V
+FALU.V
+L0 1
+Z4 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z5 !s108 1784461047.000000
+Z6 !s107 ALU.V|sign_extend.v|register_file.v|program_counter.v|mips_top.v|mips_datapath.v|instruction_memory.v|display.v|data_memory.v|control_unit.v|SevenSegDecoder.v|Mux2to1.v|ClockDivider.v|ALUcontrol.v|../tb/tb_mips_top.v|
+Z7 !s90 -quiet|../tb/tb_mips_top.v|ALUcontrol.v|ClockDivider.v|Mux2to1.v|SevenSegDecoder.v|control_unit.v|data_memory.v|display.v|instruction_memory.v|mips_datapath.v|mips_top.v|program_counter.v|register_file.v|sign_extend.v|ALU.V|
+!i113 1
+Z8 o-quiet
+Z9 tCvgOpt 0
+n@a@l@u
+vALUcontrol
+R1
+!i10b 1
+!s100 9]Ae<f@UDFbRIiUF9=37M1
+I]8aHTaF[iTD4NII`IGiK_1
+R2
+R0
+w1784107555
+8ALUcontrol.v
+FALUcontrol.v
+L0 1
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+n@a@l@ucontrol
+vClockDivider
+R1
+!i10b 1
+!s100 n]1PE`6:=E7?<TC6V::bR3
+Id2m8X`GN;R5JV8mNOP2CZ2
+R2
+R0
+Z10 w1784205733
+8ClockDivider.v
+FClockDivider.v
+L0 15
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+n@clock@divider
+vcontrol_unit
+R1
+!i10b 1
+!s100 no6>YK6U09OM6@K^5o3RO2
+IHz;JYm?M8K6f4eH95R;3H1
+R2
+R0
+w1784454977
+8control_unit.v
+Fcontrol_unit.v
+L0 5
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vdata_memory
+R1
+!i10b 1
+!s100 1^SVT0leVZ?0Ya2oH9m3k3
+IiL3iea`L<90Zj;Si>oG^Z0
+R2
+R0
+w1784455002
+8data_memory.v
+Fdata_memory.v
+L0 13
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vdisplay
+R1
+!i10b 1
+!s100 1?cic9IRd0VX:jTldnRcR3
+I[k=^AU3hQeT1ZiRA>1K`81
+R2
+R0
+R10
+8display.v
+Fdisplay.v
+L0 3
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vinstruction_memory
+R1
+!i10b 1
+!s100 7?:>Zm?ANVSgY7>lCDl700
+I6XcZD]2VhRa^E8Z52o;K^3
+R2
+R0
+w1784210004
+8instruction_memory.v
+Finstruction_memory.v
+L0 11
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmips_datapath
+R1
+!i10b 1
+!s100 5OIi2h>>=>Cj51ZjfbWiT3
+IQ_=8_4?`d9>@XXJH1Sl1L0
+R2
+R0
+w1784461031
+8mips_datapath.v
+Fmips_datapath.v
+L0 3
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmips_top
+R1
+!i10b 1
+!s100 4]dK?5=130hUme6>c<Z4A3
+Ibm^F1AF]2KHRnLNz=I]_T0
+R2
+R0
+w1784455768
+8mips_top.v
+Fmips_top.v
+Z11 L0 14
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vMux2to1
+R1
+!i10b 1
+!s100 hdmNf7Ac7J7QT::GK]iQ`0
+I4CK[^6klh4M6SaIjoM5eW1
+R2
+R0
+w1784023998
+8Mux2to1.v
+FMux2to1.v
+L0 1
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+n@mux2to1
+vprogram_counter
+R1
+!i10b 1
+!s100 3P?iRkeki;Mk@]CeD6oKb2
+Ik1NYD8mUJXnd4oC?RH5LY0
+R2
+R0
+R10
+8program_counter.v
+Fprogram_counter.v
+L0 1
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vregister_file
+Z12 !s110 1784462188
+!i10b 1
+!s100 J6jlk[JYfO^E>hL>J=1?a3
+I:m14LZWQQlU;OXd<aDLZ<3
+R2
+R0
+R10
+8register_file.v
+Fregister_file.v
+L0 1
+R4
+r1
+!s85 0
+31
+Z13 !s108 1784462188.000000
+Z14 !s107 register_file.v|../tb/tb_register_file.v|
+Z15 !s90 -quiet|../tb/tb_register_file.v|register_file.v|
+!i113 1
+R8
+R9
+vSevenSegDecoder
+R1
+!i10b 1
+!s100 D2O_e:Rf`L35HeKX8ajHl3
+I2KLQNgWGNkXHSNb7`j[@B1
+R2
+R0
+R3
+8SevenSegDecoder.v
+FSevenSegDecoder.v
+R11
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+n@seven@seg@decoder
+vsign_extend
+R1
+!i10b 1
+!s100 P[9bKeX1^OP6BbZKUa<Bn2
+IgiX8l=lXVXaAg7Oh^d>`:2
+R2
+R0
+R10
+8sign_extend.v
+Fsign_extend.v
+L0 1
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vtb_mips_top
+R1
+!i10b 1
+!s100 gU><G1]VMo?amDnPg?1gV0
+I9^Zb8d>E>@XOz[9dOEXVm1
+R2
+R0
+w1784455811
+8../tb/tb_mips_top.v
+F../tb/tb_mips_top.v
+L0 19
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vtb_register_file
+R12
+!i10b 1
+!s100 e:ORmcB;8FPTXI]5S:W[N2
+ITGi8aHmXYXLncfYi^nPJ61
+R2
+R0
+w1784455516
+8../tb/tb_register_file.v
+F../tb/tb_register_file.v
+L0 3
+R4
+r1
+!s85 0
+31
+R13
+R14
+R15
+!i113 1
+R8
+R9

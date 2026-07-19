@@ -21,10 +21,8 @@ module tb_mips_datapath;
     integer     cycle;
     integer     k;
 
-    // DIVISOR=1 bypasses the slow board clock so the CPU runs at clk_in speed.
-    // (Hardware uses the default 25_000_000 -> 1 Hz.)
-    mips_datapath #(.DIVISOR(1)) DUT (
-        .clk_in          (clk),
+    mips_datapath DUT (
+        .clk             (clk),
         .reset           (reset),
         .pc              (pc),
         .instruction     (instruction),
@@ -137,7 +135,7 @@ module tb_mips_datapath;
                          seg_char(HEX5), seg_char(HEX4),        // result
                          LEDR,
                          led_names(LEDR));
-                @(posedge DUT.clk);      // CPU clock (divided), not clk_in
+                @(posedge clk);          // CPU clock
                 cycle = cycle + 1;
             end
         end

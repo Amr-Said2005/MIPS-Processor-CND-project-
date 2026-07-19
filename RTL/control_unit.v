@@ -1,6 +1,6 @@
 // ============================================================
 //  control_unit.v  -  Control Unit  (combinational decoder)
-//  RISC-Style 20-bit Processor - CND Internship
+//  RISC-Style 32-bit Processor - CND Internship
 // ============================================================
 module control_unit (
 	input  wire [5:0] opcode,
@@ -151,7 +151,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b1;        
-                ALUop    = 2'b00;      
+                ALUop    = 2'b01;      
                 MemRead  = 1'b1;
                 MemWrite = 1'b0;
                 MemtoReg = 1'b0;        
@@ -165,7 +165,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b1;
                 ALUSrc   = 1'b1;
-                ALUop    = 2'b00;       
+                ALUop    = 2'b01;       
                 MemRead  = 1'b0;
                 MemWrite = 1'b1;
                 MemtoReg = 1'b0;
@@ -179,7 +179,7 @@ module control_unit (
                 RegDst   = 1'b0;
                 RegWrite = 1'b0;
                 ALUSrc   = 1'b1;
-                ALUop    = 2'b00;
+                ALUop    = 2'b01;
                 MemRead  = 1'b1;
                 MemWrite = 1'b1;
                 MemtoReg = 1'b0;

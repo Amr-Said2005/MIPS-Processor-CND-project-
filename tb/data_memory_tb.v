@@ -4,13 +4,16 @@ module data_memory_tb();
     reg [31:0] address, data_in;
     wire [31:0] data_out;
     integer i;
+    // data_memory now has separate read/write addresses (needed by pmc);
+    // this tb only ever accesses one location at a time, so drive both.
     data_memory dut(
         .clk(clk),
         .rst_a(rst_a),
         .rst_r(rst_r),
         .memRead(memRead),
         .memWrite(memWrite),
-        .address(address),
+        .read_address(address),
+        .write_address(address),
         .data_in(data_in),
         .data_out(data_out)
     );

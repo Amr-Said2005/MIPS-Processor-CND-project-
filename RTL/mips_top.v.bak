@@ -1,19 +1,10 @@
 // ----------------------------------------------------------------------------
 // Board top-level for the DE10-Standard.
 // Wraps mips_datapath and exposes ONLY signals that map to real board pins.
-//
-// The clock divider lives HERE (not in the datapath): the datapath is
-// clock-agnostic and testbenches drive it at full speed, while the board
-// build slows the CPU to 1 Hz so the HEX displays are readable.
-//   cpu_clk = CLOCK_50 / (2 * DIVISOR);  25_000_000 -> 1 Hz.
-// tb_mips_top overrides DIVISOR to a small value to keep simulation short.
-//
-// Reset note: the divider holds cpu_clk at 0 while reset is asserted; the
-// PC/register file use ASYNC resets, so the CPU still initialises correctly.
+// The datapath's 32-bit observation outputs (pc/instruction/alu_result/
+// write_back_data) are left unconnected here -- they exist for simulation.
 // ----------------------------------------------------------------------------
-module mips_top #(
-    parameter DIVISOR = 25000000
-)(
+module mips_top (
     input  wire        CLOCK_50,   // 50 MHz board oscillator
     input  wire [3:0]  KEY,        // push buttons, ACTIVE-LOW (pressed = 0)
     output wire [9:0]  LEDR,       // red LEDs  -> control signals
@@ -28,17 +19,9 @@ module mips_top #(
     // KEY[0] is active-low; the CPU reset is active-high.
     wire reset = ~KEY[0];
 
-    // Slow CPU clock for a human-readable demo.
-    wire cpu_clk;
-
-    ClockDivider #(.DIVISOR(DIVISOR)) ClockDivider (
-        .clk_in  (CLOCK_50),
-        .rst     (reset),
-        .clk_out (cpu_clk)
-    );
-
-    mips_datapath CPU (
-        .clk             (cpu_clk),
+    // DIVISOR = 25_000_000 -> 50MHz / (2*25e6) = 1 Hz (one instruction/second)
+    mips_datapath #(.DIVISOR(25000000)) CPU (
+        .clk_in          (CLOCK_50),
         .reset           (reset),
 
         // simulation-only observation outputs: intentionally unconnected

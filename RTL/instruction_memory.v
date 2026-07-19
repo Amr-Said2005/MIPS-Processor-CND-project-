@@ -1,20 +1,25 @@
+// Instruction ROM, 64 words (256 bytes).
+//
+// The PC is a BYTE address and counts by 4; instructions are always word
+// aligned, so the low 2 bits are dropped and the ROM is indexed by pc[7:2].
+//
+// Words (not a byte array) on purpose: a byte array needs 4 concurrent reads
+// (addr, addr+1, addr+2, addr+3) to assemble an instruction. Quartus cannot
+// infer that as a ROM, so it degrades to plain registers -- and $readmemb is
+// not synthesisable on plain registers, leaving the memory all zeros on the
+// board. A single-port word ROM infers cleanly and keeps its init contents.
 module instruction_memory (
-    input  [31:0] pc,   // byte address (PC counts by 4)
+    input  [31:0] pc,            // byte address (PC counts by 4)
     output [31:0] instruction
 );
 
-
-    reg [7:0] instr_memory [0:4095]; // byte addressable memory, every address is 1 byte, 4096 bytes = 1024 words
+    reg [31:0] rom [0:127];       // 128 instructions
 
     initial begin
-        $readmemb("instruction.mem.txt", instr_memory);
+        $readmemb("instruction.mem.txt", rom);
     end
-    
-    wire [11:0] addr = pc[11:0];
 
-    assign instruction = { instr_memory[addr], 
-                           instr_memory[addr + 12'd1], 
-                           instr_memory[addr + 12'd2], 
-                           instr_memory[addr + 12'd3] };
+    // 128 words need a 7-bit index: pc[8:2] (pc[7:2] would wrap at word 64)
+    assign instruction = rom[pc[8:2]];   // drop the 2 byte-offset bits
 
 endmodule
