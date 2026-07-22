@@ -36,6 +36,7 @@ module inst_decode (
     output        pmc,
     output        JMN,
     output        swi_inc,
+    output [25:0] jump_index,
     output        Extd
 );
 
@@ -48,7 +49,7 @@ module inst_decode (
     wire [15:0] imm    = instruction[15:0];
     assign funct = instruction[5:0];
     wire [5:0] opcode  = instruction[31:26];
-
+    assign jump_index = instruction[25:0];
     //------------------------------------------------------------
     // Pass PC+4 to next stage
     //------------------------------------------------------------
