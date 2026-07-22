@@ -4,7 +4,6 @@
 // ============================================================
 module control_unit (
 	input  wire [5:0] opcode,
-    input  wire       zero,
     output reg        RegDst,    
     output reg        RegWrite,  
     output reg        ALUSrc,
@@ -17,8 +16,7 @@ module control_unit (
     output reg        pmc,
     output reg        JMN,
     output reg        swi_inc,
-    output reg        Extd,
-    output wire       PCSrc      
+    output reg        Extd
 );
 
     
@@ -34,7 +32,6 @@ module control_unit (
     parameter PMC    = 6'b001001;
 
 	 
-    assign PCSrc = (Branch & zero) | Jump | JMN | pmc;
 
     
     always @(*) begin
