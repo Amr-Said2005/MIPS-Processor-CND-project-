@@ -61,16 +61,7 @@ module iexecute(
         .Sel (swi_inc),
         .Y   (write_reg)
     );
-	 
-	 // 3-1 MUX before ALUSrcMux
-	Mux3to1 #(32) ForwardAMux (
-		.A(read_data_1), .B(mem_wb_write_data), .C(ex_mem_alu_result),
-		.Sel(ForwardA), .Y(fwd_read_data_1)
-	);
-	Mux3to1 #(32) ForwardBMux (
-		.A(read_data_2), .B(mem_wb_write_data), .C(ex_mem_alu_result),
-		.Sel(ForwardB), .Y(fwd_read_data_2)
-	);
+
 
 
     Mux2to1 ALUSrcMux (
