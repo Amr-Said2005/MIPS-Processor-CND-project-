@@ -58,7 +58,7 @@ module  piplined_mips_datapath(
 		
 
 
-	 pipreg if_id_reg  #(.N(64))(hold, clear,.clk(clk), .in(if_id_in),.out(if_id_out);
+	 pipreg if_id_reg  #(.N(64))(hold, clear,.clk(clk), .in(if_id_in),.out(if_id_out));
 	 
 	wire [31:0] IFID_instruction;
 	wire [31:0] IFID_pc_plus4;
