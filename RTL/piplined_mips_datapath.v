@@ -16,8 +16,12 @@ module  piplined_mips_datapath(
     // red LEDs: live view of the control signals
     output [9:0]  LEDR
 );
-	// control signals
-	 wire        RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg;
+	//temp
+    reg hold=0;
+    reg clear=0;
+    
+    // control signals
+	wire        RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg;
     wire        Branch, Jump, pmc, JMN, swi_inc, Extd, PCSrc;
     wire [1:0]  ALUop;
     wire        zero;
