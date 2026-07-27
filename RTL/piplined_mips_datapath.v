@@ -19,7 +19,7 @@ module  piplined_mips_datapath(
 	//temp
     reg hold=0;
     reg clear=0;
-    
+
     // control signals
 	wire        RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg;
     wire        Branch, Jump, pmc, JMN, swi_inc, Extd, PCSrc;
@@ -219,7 +219,7 @@ assign {
     idex_swi_inc
 } = idex_out;
  pipreg   #(.N(188)) id_ex_reg (.hold(), .clear(),.clk(clk), .in(idex_in),.out(idex_out));
-	 
+endmodule	 
 	
 	
 	
