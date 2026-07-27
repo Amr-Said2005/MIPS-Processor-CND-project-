@@ -53,8 +53,8 @@ module iexecute(
     assign branch_target = pc_plus4 + branch_offset;
     assign PCSrc = (Branch & zero) | Jump;
 
-    // ---- NEW: forwarding muxes, resolved BEFORE anything downstream uses
-    //           the register-file values ----
+    // forwarding muxes, resolved BEFORE anything downstream uses
+    //           the register-file values
     wire [31:0] fwd_read_data_1, fwd_read_data_2;
 
     Mux3to1 #(32) ForwardAMux (
