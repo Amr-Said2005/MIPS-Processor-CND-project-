@@ -57,11 +57,7 @@ module  piplined_mips_datapath(
 		
 
 
-<<<<<<< Updated upstream
-	 pipreg if_id_reg  #(.N(64))(hold, clear,.clk(clk), .in(if_id_in),.out(if_id_out));
-=======
 	 pipreg   #(.N(64)) if_id_reg (.hold(), .clear(),.clk(clk), .in(if_id_in),.out(if_id_out));
->>>>>>> Stashed changes
 	 
 	wire [31:0] IFID_instruction;
 	wire [31:0] IFID_pc_plus4;
