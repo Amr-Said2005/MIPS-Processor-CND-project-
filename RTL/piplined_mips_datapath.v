@@ -219,7 +219,16 @@ assign {
     idex_swi_inc
 } = idex_out;
  pipreg   #(.N(188)) id_ex_reg (.hold(), .clear(),.clk(clk), .in(idex_in),.out(idex_out));
+mem MEM (
+    .clk          (clk),
+    .reset        (reset),
+    .alu_result   (alu_result),
+    .store_data   (store_data),
+    .MemRead      (idex_MemRead),
+    .MemWrite     (idex_MemWrite),
+    .mem_data     (mem_data),
+    .alu_result_out(alu_result_out)
+);
+	
+	
 endmodule	 
-	
-	
-	
