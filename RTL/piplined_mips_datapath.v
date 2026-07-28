@@ -278,7 +278,54 @@ mem MEM (
     .mem_data      (mem_data),
     .alu_result_out(alu_result_out)
 );
- endmodule 
+//------------------------------------------------------------
+// MEM/WB Pipeline Register
+//------------------------------------------------------------
+
+wire [70:0] memwb_in;
+wire [70:0] memwb_out;
+
+// Signals after MEM/WB register
+wire [31:0] wb_alu_result;
+wire [31:0] wb_mem_data;
+wire        wb_MemtoReg;
+
+assign memwb_in = {
+    alu_result_out,
+    mem_data,
+    write_reg_ex,
+    idex_RegWrite,
+    idex_MemtoReg
+};
+
+pipreg #(.N(71)) mem_wb_reg (
+    .hold  (hold),
+    .clear (clear),
+    .clk   (clk),
+    .in    (memwb_in),
+    .out   (memwb_out)
+);
+
+assign  {
+    wb_alu_result,
+    wb_mem_data,
+    wb_write_reg,
+    wb_RegWrite,
+    wb_MemtoReg
+        } = memwb_out;
 	
-	
-	
+//------------------------------------------------------------
+// Write Back Stage
+//------------------------------------------------------------
+
+write_back WB (
+
+    .alu_result     (wb_alu_result),
+    .mem_data       (wb_mem_data),
+    .MemtoReg       (wb_MemtoReg),
+
+    .write_back_data(wb_write_data)
+
+);
+
+endmodule 
