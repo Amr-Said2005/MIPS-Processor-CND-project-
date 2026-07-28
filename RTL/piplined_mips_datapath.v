@@ -233,7 +233,7 @@ wire        exmem_RegWrite;
 wire        exmem_MemRead;
 wire        exmem_MemWrite;
 wire        exmem_MemtoReg;
-
+wire [31:0] alu_result_out;
 wire [136:0] exmem_in;
 wire [136:0] exmem_out;
 
@@ -293,9 +293,9 @@ wire        wb_MemtoReg;
 assign memwb_in = {
     alu_result_out,
     mem_data,
-    write_reg_ex,
-    idex_RegWrite,
-    idex_MemtoReg
+    exmem_write_reg,
+    exmem_RegWrite,
+    exmem_MemtoReg
 };
 
 pipreg #(.N(71)) mem_wb_reg (
@@ -324,7 +324,7 @@ write_back WB (
     .mem_data       (wb_mem_data),
     .MemtoReg       (wb_MemtoReg),
 
-    .write_back_data(wb_write_data)
+    .write_back_data(write_back_data)
 
 );
 
