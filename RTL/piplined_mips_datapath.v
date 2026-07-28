@@ -16,12 +16,8 @@ module  piplined_mips_datapath(
     // red LEDs: live view of the control signals
     output [9:0]  LEDR
 );
-	//temp
-    reg hold=0;
-    reg clear=0;
-
-    // control signals
-	wire        RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg;
+	// control signals
+	 wire        RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg;
     wire        Branch, Jump, pmc, JMN, swi_inc, Extd, PCSrc;
     wire [1:0]  ALUop;
     wire        zero;
@@ -53,7 +49,8 @@ module  piplined_mips_datapath(
 	 wire [31:0] instruction_ifid , pc_plus4_ifid;
 	
 	 
-	 inst_fetch if_id(.clk(clk),.reset(reset), .pc_src(PCSrc),.branch_target(taken_target ),.pc(pc),.pc_plus4( pc_plus4_ifid),.instruction(instruction_ifid));
+	 inst_fet if_id(.clk(clk), .reset(reset), .PCSrc(PCSrc), .next_pc(taken_target), .pc(pc), .pc_plus4(pc_plus4_ifid), .instruction(instruction_ifid));
+
 		
 		wire [63:0] if_id_in  = {instruction_ifid, pc_plus4_ifid};  
 		wire [63:0] if_id_out;
@@ -73,7 +70,7 @@ module  piplined_mips_datapath(
 	wire [5:0]  funct;
 	wire [31:0] read_data_1, read_data_2, id_pc_plus4;
    wire [25:0] jump_index;
-	wire [31:0] jump_target = { IFID_pc_plus4[31:28], jump_index, 2'b00 };
+	wire [31:0] jump_target;
 	
 	 inst_decode ID (
     .clk         (clk),
@@ -136,6 +133,8 @@ module  piplined_mips_datapath(
     
     wire [31:0] branch_target;
   	 wire [4:0] write_reg_ex;
+	 wire [31:0] mem_read_addr_ex;
+	wire [31:0] mem_write_addr_ex;
     
     wire [31:0] store_data;
 	 wire [187:0] idex_in;
@@ -163,12 +162,18 @@ iexecute EX (
     .JMN          (idex_JMN),
     .pmc          (idex_pmc),
     .swi_inc      (idex_swi_inc),
+    .ForwardA         (2'b00),   // stub — no forwarding unit yet
+    .ForwardB         (2'b00),   // stub
+    .ex_mem_alu_result(32'b0),   // stub — no EX/MEM register yet
+    .mem_wb_write_data(32'b0),   // stub — no MEM/WB register yet
     .alu_result   (alu_result),
     .branch_target(branch_target),
     .jump_target  (jump_target),
     .write_reg    (write_reg_ex),
     .zero         (zero),
-    .store_data   (store_data),
+    .mem_write_data(store_data),   
+    .mem_read_addr (mem_read_addr_ex),   
+    .mem_write_addr(mem_write_addr_ex),  
     .PCSrc        (PCSrc)
 );
 
@@ -219,7 +224,7 @@ assign {
     idex_swi_inc
 } = idex_out;
  pipreg   #(.N(188)) id_ex_reg (.hold(), .clear(),.clk(clk), .in(idex_in),.out(idex_out));
-mem MEM (
+ mem MEM (
     .clk          (clk),
     .reset        (reset),
     .alu_result   (alu_result),
@@ -230,5 +235,8 @@ mem MEM (
     .alu_result_out(alu_result_out)
 );
 	
+
+ endmodule 
 	
-endmodule	 
+	
+	
