@@ -1,0 +1,20 @@
+# vsim -onfinish stop -do "../tb/wave_regfile.do" tb_register_file 
+# Start time: 14:59:44 on Jul 19,2026
+# Loading work.tb_register_file
+# Loading work.register_file
+# do ../tb/wave_regfile.do
+# ==================================================
+# Starting Register File Self-Checking Testbench...
+# ==================================================
+# -> Test 1: Standard Write and Read
+# -> Test 2: Write to Register 0 
+# -> Test 3: Write Enable 
+# -> Test 4: Dual Simultaneous Reads
+# ==================================================
+#  SUCCESS: All tests passed with 0 errors!
+# ==================================================
+# ** Note: $finish    : ../tb/tb_register_file.v(153)
+#    Time: 112 ps  Iteration: 0  Instance: /tb_register_file
+# Break in Module tb_register_file at ../tb/tb_register_file.v line 153
+# 0 ps
+# 118 ps
