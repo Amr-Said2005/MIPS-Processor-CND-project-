@@ -224,18 +224,60 @@ assign {
     idex_swi_inc
 } = idex_out;
  pipreg   #(.N(188)) id_ex_reg (.hold(), .clear(),.clk(clk), .in(idex_in),.out(idex_out));
- mem MEM (
-    .clk          (clk),
-    .reset        (reset),
-    .alu_result   (alu_result),
-    .store_data   (store_data),
-    .MemRead      (idex_MemRead),
-    .MemWrite     (idex_MemWrite),
-    .mem_data     (mem_data),
+wire [31:0] exmem_alu_result;
+wire [31:0] exmem_store_data;
+wire [31:0] exmem_mem_read_addr;
+wire [31:0] exmem_mem_write_addr;
+wire [4:0]  exmem_write_reg;
+wire        exmem_RegWrite;
+wire        exmem_MemRead;
+wire        exmem_MemWrite;
+wire        exmem_MemtoReg;
+
+wire [136:0] exmem_in;
+wire [136:0] exmem_out;
+
+assign exmem_in = {
+    alu_result,          
+    store_data,          
+    mem_read_addr_ex,     
+    mem_write_addr_ex,    
+    write_reg_ex,         
+    idex_RegWrite,         
+    idex_MemRead,         
+    idex_MemWrite,         
+    idex_MemtoReg          
+};   
+
+pipreg #(.N(137)) ex_mem_reg (
+    .clk   (clk),
+    .hold  (1'b0),
+    .clear (1'b0),
+    .in    (exmem_in),
+    .out   (exmem_out)
+);
+
+assign {
+    exmem_alu_result,
+    exmem_store_data,
+    exmem_mem_read_addr,
+    exmem_mem_write_addr,
+    exmem_write_reg,
+    exmem_RegWrite,
+    exmem_MemRead,
+    exmem_MemWrite,
+    exmem_MemtoReg
+} = exmem_out;
+mem MEM (
+    .clk           (clk),
+    .reset         (reset),
+    .alu_result    (exmem_alu_result),
+    .store_data    (exmem_store_data),
+    .MemRead       (exmem_MemRead),
+    .MemWrite      (exmem_MemWrite),
+    .mem_data      (mem_data),
     .alu_result_out(alu_result_out)
 );
-	
-
  endmodule 
 	
 	
