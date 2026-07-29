@@ -33,21 +33,12 @@ module  piplined_mips_datapath(
     wire [31:0] pc_plus4;                                   // from the PC
           
 
-    // j: word address in instruction[25:0], shifted left 2 for a byte address.
-    // The top 4 bits come from PC+4, so a jump stays in the current 256 MB region.
-   
-
-    // PCSrc (from the control unit) is already (Branch & zero) | Jump | JMN | pmc,
-    // so it only decides *whether* to redirect; these muxes pick *which* target:
-    //   branch_target : beq            (PC+4 + offset<<2)
-    //   jump_target   : j              (from the instruction)
-    //   mem_data      : jmn / pmc      (indirect -- target loaded from memory)
     wire [31:0] direct_target;
     wire [31:0] taken_target;
     wire [31:0] mem_data;         // data-memory read (declared here: used below)
 	 
 	 wire [31:0] instruction_ifid , pc_plus4_ifid;
-	
+	 assign taken_target = idex_Jump ? jump_target : branch_target;
 	 
 	 inst_fet if_id(.clk(clk), .reset(reset), .PCSrc(PCSrc), .next_pc(taken_target), .pc(pc), .pc_plus4(pc_plus4_ifid), .instruction(instruction_ifid));
 
@@ -58,7 +49,7 @@ module  piplined_mips_datapath(
 		
 
 
-	 pipreg   #(.N(64)) if_id_reg (.hold(), .clear(),.clk(clk), .in(if_id_in),.out(if_id_out));
+	 pipreg   #(.N(64)) if_id_reg (.hold(hold), .clear(PCSrc),.clk(clk), .in(if_id_in),.out(if_id_out));
 	 
 	wire [31:0] IFID_instruction;
 	wire [31:0] IFID_pc_plus4;
@@ -129,8 +120,14 @@ module  piplined_mips_datapath(
     wire idex_JMN;
     wire idex_pmc;
     wire idex_swi_inc;
+// hazzard detection
 
-    
+wire load_use_hazard= idex_MemRead && ((idex_rt==rs)||(idex_rt==rt));
+assign hold =load_use_hazard;	 
+	 
+	 
+
+
     wire [31:0] branch_target;
   	 wire [4:0] write_reg_ex;
 	 wire [31:0] mem_read_addr_ex;
@@ -139,7 +136,7 @@ module  piplined_mips_datapath(
     wire [31:0] store_data;
 	 wire [187:0] idex_in;
 	 wire [187:0] idex_out;
-	 
+//decode/excute 	 
 iexecute EX (
     .pc_plus4     (idex_pc_plus4),
     .read_data_1  (idex_read_data_1),
@@ -162,10 +159,10 @@ iexecute EX (
     .JMN          (idex_JMN),
     .pmc          (idex_pmc),
     .swi_inc      (idex_swi_inc),
-    .ForwardA         (2'b00),   // stub — no forwarding unit yet
-    .ForwardB         (2'b00),   // stub
-    .ex_mem_alu_result(32'b0),   // stub — no EX/MEM register yet
-    .mem_wb_write_data(32'b0),   // stub — no MEM/WB register yet
+    .ForwardA         (2'b00),   
+    .ForwardB         (2'b00),   
+    .ex_mem_alu_result(32'b0),  
+    .mem_wb_write_data(32'b0),  
     .alu_result   (alu_result),
     .branch_target(branch_target),
     .jump_target  (jump_target),
@@ -199,7 +196,8 @@ assign idex_in = {
     JMN,             // 1
     pmc,             // 1
     swi_inc          // 1
-};  
+};
+ 
 assign {
     idex_pc_plus4,
     idex_read_data_1,
@@ -223,7 +221,11 @@ assign {
     idex_pmc,
     idex_swi_inc
 } = idex_out;
- pipreg   #(.N(188)) id_ex_reg (.hold(), .clear(),.clk(clk), .in(idex_in),.out(idex_out));
+
+ pipreg   #(.N(188)) id_ex_reg (.hold(1'b0), .clear(PCSrc|hold),.clk(clk), .in(idex_in),.out(idex_out));
+ 
+ // excute/Memoryaccess
+ 
 wire [31:0] exmem_alu_result;
 wire [31:0] exmem_store_data;
 wire [31:0] exmem_mem_read_addr;
@@ -299,8 +301,8 @@ assign memwb_in = {
 };
 
 pipreg #(.N(71)) mem_wb_reg (
-    .hold  (hold),
-    .clear (clear),
+    .hold  (1'b0),
+    .clear (1'b0),
     .clk   (clk),
     .in    (memwb_in),
     .out   (memwb_out)
@@ -317,7 +319,7 @@ assign  {
 //------------------------------------------------------------
 // Write Back Stage
 //------------------------------------------------------------
-
+assign wb_write_data = write_back_data;
 write_back WB (
 
     .alu_result     (wb_alu_result),
@@ -327,5 +329,6 @@ write_back WB (
     .write_back_data(write_back_data)
 
 );
+
 
 endmodule 
