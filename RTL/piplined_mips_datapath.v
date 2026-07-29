@@ -125,7 +125,22 @@ module  piplined_mips_datapath(
 wire load_use_hazard= idex_MemRead && ((idex_rt==rs)||(idex_rt==rt));
 assign hold =load_use_hazard;	 
 	 
-	 
+	  wire [1:0] ForwardA;
+	  wire [1:0] ForwardB;
+
+     forwarding_unit FWD (
+    .id_ex_rs        (idex_rs),
+    .id_ex_rt        (idex_rt),
+    .ex_mem_write_reg(exmem_write_reg),
+    .ex_mem_RegWrite (exmem_RegWrite),
+    .mem_wb_write_reg(wb_write_reg),
+    .mem_wb_RegWrite (wb_RegWrite),
+    .ForwardA        (ForwardA),
+    .ForwardB        (ForwardB)
+     );
+
+
+
 
 
     wire [31:0] branch_target;
@@ -159,10 +174,10 @@ iexecute EX (
     .JMN          (idex_JMN),
     .pmc          (idex_pmc),
     .swi_inc      (idex_swi_inc),
-    .ForwardA         (2'b00),   
-    .ForwardB         (2'b00),   
-    .ex_mem_alu_result(32'b0),  
-    .mem_wb_write_data(32'b0),  
+    .ForwardA         (ForwardA),   
+    .ForwardB         (ForwardB ),   
+   .ex_mem_alu_result(exmem_alu_result),
+	.mem_wb_write_data(write_back_data), 
     .alu_result   (alu_result),
     .branch_target(branch_target),
     .jump_target  (jump_target),
