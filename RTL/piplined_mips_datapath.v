@@ -40,9 +40,18 @@ module  piplined_mips_datapath(
 	 wire [31:0] instruction_ifid , pc_plus4_ifid;
 	 assign taken_target = idex_Jump ? jump_target : branch_target;
 	 
-	 inst_fet if_id(.clk(clk), .reset(reset), .PCSrc(PCSrc), .next_pc(taken_target), .pc(pc), .pc_plus4(pc_plus4_ifid), .instruction(instruction_ifid));
+wire        fetch_pc_src  = PCSrc | hold;
+wire [31:0] fetch_next_pc = hold ? pc : taken_target;
 
-		
+inst_fet if_id(
+    .clk(clk),
+    .reset(reset),
+    .PCSrc(fetch_pc_src),
+    .next_pc(fetch_next_pc),
+    .pc(pc),
+    .pc_plus4(pc_plus4_ifid),
+    .instruction(instruction_ifid)
+);
 		wire [63:0] if_id_in  = {instruction_ifid, pc_plus4_ifid};  
 		wire [63:0] if_id_out;
 		
